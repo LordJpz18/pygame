@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Atelier Pygame - Attrape les objets</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Police Google -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050816;
+      --bg-alt: #0b1021;
+      --accent: #4f46e5;
+      --accent-soft: rgba(79, 70, 229, 0.15);
+      --accent-2: #22c55e;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --card: #0f172a;
+      --border: rgba(148, 163, 184, 0.2);
+      --radius-xl: 1.5rem;
+      --shadow-soft: 0 24px 60px rgba(15, 23, 42, 0.8);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1d2671 0, #050816 45%, #020617 100%);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+      scroll-behavior: smooth;
+    }
+
+    /* Barre de navigation */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(20px);
+      background: linear-gradient(to bottom, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.7));
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      font-size: 1rem;
+    }
+
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      background: conic-gradient(from 180deg, #4f46e5, #22c55e, #06b6d4, #4f46e5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 0.9rem;
+      box-shadow: 0 0 20px rgba(129, 140, 248, 0.8);
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 1rem;
+      font-size: 0.9rem;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--muted);
+      padding: 0.35rem 0.8rem;
+      border-radius: 999px;
+      transition: all 0.2s ease;
+    }
+
+    nav a:hover {
+      background: rgba(148, 163, 184, 0.12);
+      color: #fff;
+    }
+
+    /* Layout principal */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    section {
+      margin-bottom: 3rem;
+    }
+
+    .section-title {
+      font-size: 1.7rem;
+      font-weight: 700;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .section-title span.icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 20% 0, #a855f7 0, #4f46e5 40%, #22c55e 100%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.8);
+    }
+
+    .section-subtitle {
+      color: var(--muted);
+      max-width: 620px;
+      font-size: 0.95rem;
+      margin-bottom: 1.3rem;
+    }
+
+    /* Hero */
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2.5fr);
+      gap: 2.5rem;
+      align-items: center;
+      margin-bottom: 3rem;
+    }
+
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .hero-title {
+      font-size: clamp(2.2rem, 4vw, 2.9rem);
+      font-weight: 700;
+      margin-bottom: 0.9rem;
+    }
+
+    .hero-title span.highlight {
+      background: linear-gradient(to right, #38bdf8, #a855f7, #22c55e);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .hero-text {
+      color: var(--muted);
+      max-width: 520px;
+      margin-bottom: 1.4rem;
+      font-size: 0.98rem;
+    }
+
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: linear-gradient(to right, rgba(79, 70, 229, 0.15), transparent);
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 0.9rem;
+    }
+
+    .hero-tag {
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(34, 197, 94, 0.15);
+      color: #bbf7d0;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-bottom: 1.4rem;
+    }
+
+    .hero-badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: var(--muted);
+    }
+
+    .hero-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      border-radius: 999px;
+      padding: 0.6rem 1.3rem;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: radial-gradient(circle at 10% 0, #6366f1, #22c55e);
+      color: white;
+      box-shadow: 0 17px 40px rgba(79, 70, 229, 0.65);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px) scale(1.02);
+      box-shadow: 0 22px 60px rgba(79, 70, 229, 0.85);
+    }
+
+    .btn-ghost {
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(30, 64, 175, 0.4);
+      color: #e5e7eb;
+    }
+
+    /* Carte démonstration */
+    .demo-card {
+      position: relative;
+      border-radius: var(--radius-xl);
+      padding: 1.4rem 1.2rem;
+      background: radial-gradient(circle at 10% 0, rgba(56, 189, 248, 0.16), rgba(15, 23, 42, 0.98));
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: 2fr 1.8fr;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    @media (max-width: 600px) {
+      .demo-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .mini-game-window {
+      background: radial-gradient(circle at 10% 0, #0f172a, #020617);
+      border-radius: 1.2rem;
+      padding: 0.75rem;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      box-shadow: 0 18px 35px rgba(15, 23, 42, 0.85);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .window-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.6rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .window-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #4b5563;
+    }
+
+    .window-dot:nth-child(1) { background: #f97373; }
+    .window-dot:nth-child(2) { background: #facc15; }
+    .window-dot:nth-child(3) { background: #4ade80; }
+
+    .game-area {
+      position: relative;
+      background: radial-gradient(circle at 20% 0, #020617, #020617 35%, #111827 100%);
+      border-radius: 0.9rem;
+      padding: 0.9rem;
+      height: 210px;
+      overflow: hidden;
+    }
+
+    .falling-object {
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border-radius: 0.6rem;
+      background: linear-gradient(135deg, #f97316, #f97373);
+      box-shadow: 0 0 18px rgba(248, 113, 113, 0.7);
+      animation: floatDown 3s linear infinite;
+    }
+
+    .falling-object:nth-child(2) {
+      left: 70%;
+      animation-delay: 0.6s;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: conic-gradient(from 120deg, #22c55e, #2dd4bf, #22c55e);
+    }
+
+    .falling-object:nth-child(3) {
+      left: 15%;
+      animation-delay: 1.2s;
+      width: 18px;
+      height: 18px;
+      background: linear-gradient(135deg, #38bdf8, #6366f1);
+    }
+
+    @keyframes floatDown {
+      0% { top: -20%; transform: translateY(0) translateX(0); }
+      100% { top: 110%; transform: translateY(20px) translateX(10px); }
+    }
+
+    .player-bar {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 110px;
+      height: 18px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #22c55e, #38bdf8);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.7);
+      animation: slideLeftRight 4s ease-in-out infinite;
+    }
+
+    @keyframes slideLeftRight {
+      0% { transform: translateX(-50%); }
+      50% { transform: translateX(40%); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .score-chip {
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      padding: 0.2rem 0.45rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      font-size: 0.7rem;
+      color: #e5e7eb;
+    }
+
+    .score-chip span {
+      color: #facc15;
+    }
+
+    .demo-text {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .demo-text strong {
+      color: #e5e7eb;
+    }
+
+    .demo-list {
+      margin-top: 0.6rem;
+      display: grid;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+    }
+
+    .demo-pill {
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .demo-pill span {
+      font-size: 0.7rem;
+      color: #a5b4fc;
+    }
+
+    /* Cartes étapes */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      border-radius: var(--radius-xl);
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid var(--border);
+      padding: 1.1rem 1.1rem 1.2rem;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.7);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(129, 140, 248, 0.9);
+      box-shadow: 0 26px 70px rgba(79, 70, 229, 0.6);
+      background: radial-gradient(circle at 0 0, rgba(79, 70, 229, 0.2), rgba(15, 23, 42, 0.96));
+    }
+
+    .card-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #a5b4fc;
+      margin-bottom: 0.25rem;
+    }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.45rem;
+    }
+
+    .card-desc {
+      font-size: 0.86rem;
+      color: var(--muted);
+      margin-bottom: 0.9rem;
+    }
+
+    .badge-time {
+      font-size: 0.72rem;
+      color: #eab308;
+      background: rgba(251, 191, 36, 0.1);
+      border-radius: 999px;
+      padding: 0.15rem 0.6rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .badge-time span {
+      font-size: 0.8rem;
+    }
+
+    /* Blocs de code */
+    .code-wrapper {
+      position: relative;
+      margin-top: 0.75rem;
+    }
+
+    .code-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .code-label span {
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      font-size: 0.65rem;
+      color: #9ca3af;
+    }
+
+    .code-block {
+      width: 100%;
+      min-height: 150px;
+      background: #020617;
+      border-radius: 0.9rem;
+      padding: 0.75rem 0.9rem;
+      border: 1px solid rgba(30, 64, 175, 0.7);
+      font-family: "Fira Code", monospace;
+      font-size: 0.78rem;
+      color: #e5e7eb;
+      resize: vertical;
+      line-height: 1.45;
+      outline: none;
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.7);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    .code-block:focus {
+      border-color: #a855f7;
+      box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.7), 0 18px 50px rgba(15, 23, 42, 0.85);
+      background: #020617;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.3rem;
+      right: 0.35rem;
+      font-size: 0.7rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.55);
+      background: rgba(15, 23, 42, 0.96);
+      color: var(--muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      backdrop-filter: blur(12px);
+      transition: all 0.15s ease;
+    }
+
+    .copy-btn:hover {
+      background: rgba(30, 64, 175, 0.6);
+      color: #e5e7eb;
+      border-color: rgba(129, 140, 248, 0.9);
+    }
+
+    .copy-btn span {
+      font-size: 0.9rem;
+    }
+
+    .note {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+    }
+
+    .note strong {
+      color: #e5e7eb;
+    }
+
+    .advanced-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .advanced-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      background: rgba(22, 163, 74, 0.15);
+      color: #bbf7d0;
+      border: 1px solid rgba(22, 163, 74, 0.4);
+      margin-bottom: 0.6rem;
+    }
+
+    footer {
+      margin-top: 3rem;
+      border-top: 1px solid rgba(51, 65, 85, 0.9);
+      padding-top: 1.3rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* Animation apparition */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(12px);
+      animation: fadeUp 0.7s ease-out forwards;
+    }
+
+    .fade-in.delay-1 { animation-delay: 0.1s; }
+    .fade-in.delay-2 { animation-delay: 0.2s; }
+    .fade-in.delay-3 { animation-delay: 0.3s; }
+    .fade-in.delay-4 { animation-delay: 0.4s; }
+    .fade-in.delay-5 { animation-delay: 0.5s; }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .anchor-link {
+      text-decoration: none;
+      color: #a5b4fc;
+      font-size: 0.78rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav-container">
+      <div class="logo">
+        <div class="logo-icon">Py</div>
+        <span>Pygame Atelier</span>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="#intro">Activité</a></li>
+          <li><a href="#etapes">Étapes</a></li>
+          <li><a href="#approfondir">Approfondir</a></li>
+          <li><a href="#code-complet">Code complet</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO / INTRO -->
+    <section id="intro" class="hero">
+      <div class="fade-in delay-1">
+        <div class="hero-pill">
+          <span class="hero-tag">Python + Pygame</span>
+          <span>Atelier ~1h30 · niveau débutant / intermédiaire</span>
+        </div>
+        <h1 class="hero-title">
+          Mini-jeu <span class="highlight">“Attrape les objets”</span> avec Pygame
+        </h1>
+        <p class="hero-text">
+          Objectif : créer un petit jeu arcade où un joueur déplace une barre en bas de l’écran pour
+          attraper des objets qui tombent. Les élèves découvrent les bases de Pygame :
+          <strong>dessin de formes, couleurs, mouvements, collisions, score</strong>… puis vont plus loin
+          avec la <strong>musique</strong> et un <strong>background personnalisé</strong>.
+        </p>
+        <div class="hero-badges">
+          <span class="hero-badge">Boucle de jeu</span>
+          <span class="hero-badge">Événements clavier</span>
+          <span class="hero-badge">Rect & collisions</span>
+          <span class="hero-badge">Random & liste d’objets</span>
+        </div>
+        <div class="hero-buttons">
+          <a class="btn btn-primary" href="#etapes">
+            Démarrer les étapes
+            <span>↓</span>
+          </a>
+          <a class="btn btn-ghost" href="#code-complet">
+            Voir directement le code complet
+          </a>
+        </div>
+      </div>
+
+      <div class="demo-card fade-in delay-2">
+        <div class="demo-grid">
+          <div class="mini-game-window">
+            <div class="window-header">
+              <div class="window-dots">
+                <span class="window-dot"></span>
+                <span class="window-dot"></span>
+                <span class="window-dot"></span>
+              </div>
+              <span>main.py · Pygame</span>
+            </div>
+            <div class="game-area">
+              <div class="score-chip">Score : <span>5</span></div>
+              <div class="falling-object" style="left: 35%;"></div>
+              <div class="falling-object"></div>
+              <div class="falling-object"></div>
+              <div class="player-bar"></div>
+            </div>
+          </div>
+          <div class="demo-text">
+            <strong>Compétences travaillées</strong>
+            <div class="demo-list">
+              <div class="demo-pill">
+                <span>●</span> Manipuler la boucle de jeu (60 FPS)
+              </div>
+              <div class="demo-pill">
+                <span>●</span> Déplacer un joueur au clavier
+              </div>
+              <div class="demo-pill">
+                <span>●</span> Générer des formes avec <code>pygame.Rect</code>
+              </div>
+              <div class="demo-pill">
+                <span>●</span> Détecter des collisions & compter les points
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ETAPES PRINCIPALES -->
+    <section id="etapes">
+      <h2 class="section-title">
+        <span class="icon">1</span> Étapes de l’activité (avec code à trous)
+      </h2>
+      <p class="section-subtitle">
+        Chaque carte ci-dessous correspond à une sous-partie du cours. Les blocs de code sont des
+        <strong>“codes à trous”</strong> : les élèves peuvent les copier-coller dans leur IDE,
+        puis compléter les parties marquées <code>____</code> ou <code># TODO</code>.
+      </p>
+
+      <div class="steps-grid">
+        <!-- ÉTAPE 1 -->
+        <article class="card fade-in delay-1">
+          <div class="card-label">Étape 1</div>
+          <div class="card-title">Initialiser Pygame & créer la fenêtre</div>
+          <div class="badge-time">
+            <span>⏱</span> ~10 min
+          </div>
+          <p class="card-desc">
+            On démarre par un squelette minimal : initialisation de Pygame, création de la fenêtre,
+            boucle de jeu et fermeture propre.
+          </p>
+
+          <div class="code-wrapper">
+            <div class="code-label">
+              Code à trous <span>main.py</span>
+            </div>
+            <button class="copy-btn" data-target="code1">
+              <span>⧉</span> Copier
+            </button>
+            <textarea id="code1" class="code-block" readonly>
+import pygame
+
+# 1) Initialiser Pygame
+pygame.____()  # TODO : appeler la fonction d'initialisation de pygame
+
+# 2) Créer la fenêtre
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((____, ____))  # TODO : utiliser WIDTH, HEIGHT
+pygame.display.set_caption("Attrape les objets - Étape 1")
+
+clock = pygame.time.Clock()
+running = True
+
+# 3) Boucle de jeu principale
+while running:
+    # a) Gestion des événements
+    for event in pygame.event.get():
+        if event.type == ____:  # TODO : constante pour la fermeture de la fenêtre
+            running = False
+
+    # b) Dessiner le fond (une couleur unie)
+    screen.fill((20, 20, 30))  # (R, G, B)
+
+    # c) Mettre à jour l'écran
+    pygame.display.flip()
+
+    # d) Limiter la vitesse de la boucle (60 FPS)
+    clock.tick(60)
+
+# 4) Quitter Pygame proprement
+pygame.quit()
+            </textarea>
+          </div>
+          <p class="note">
+            <strong>Astuce :</strong> Demander aux élèves d’identifier les étapes de la
+            boucle de jeu (événements → dessin → affichage → tempo).
+          </p>
+        </article>
+
+        <!-- ÉTAPE 2 -->
+        <article class="card fade-in delay-2">
+          <div class="card-label">Étape 2</div>
+          <div class="card-title">Dessiner les formes (joueur + objets)</div>
+          <div class="badge-time">
+            <span>⏱</span> ~15 min
+          </div>
+          <p class="card-desc">
+            On ajoute le joueur (un rectangle) en bas de l’écran, et une liste d’objets
+            qui tomberont plus tard. On se concentre sur les <code>Rect</code> et leur position.
+          </p>
+
+          <div class="code-wrapper">
+            <div class="code-label">
+              Code à trous <span>main.py</span>
+            </div>
+            <button class="copy-btn" data-target="code2">
+              <span>⧉</span> Copier
+            </button>
+            <textarea id="code2" class="code-block" readonly>
+import pygame
+
+pygame.init()
+
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Attrape les objets - Étape 2")
+clock = pygame.time.Clock()
+
+# 1) Couleurs (R, G, B)
+BACKGROUND = (20, 20, 30)
+PLAYER_COLOR = (0, 180, 255)
+OBJECT_COLOR = (255, 120, 120)
+
+# 2) Joueur : un rectangle
+player_width = 80
+player_height = 20
+player = pygame.Rect(
+    WIDTH // 2 - player_width // 2,
+    HEIGHT - 40,
+    player_width,
+    player_height
+)
+
+# 3) Liste d'objets (pour l'instant vide)
+objects = []
+
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # 4) Effacer l'écran
+    screen.fill(BACKGROUND)
+
+    # 5) Dessiner le joueur
+    pygame.draw.rect(screen, ____, player)  # TODO : couleur du joueur
+
+    # 6) Dessiner chaque objet (quand on en aura)
+    for obj in objects:
+        pygame.draw.rect(screen, OBJECT_COLOR, ____)  # TODO : rect de l'objet
+
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
+            </textarea>
+          </div>
+          <p class="note">
+            <strong>Variation :</strong> Remplacer le joueur par un carré, ou changer sa taille
+            et sa position initiale.
+          </p>
+        </article>
+
+        <!-- ÉTAPE 3 -->
+        <article class="card fade-in delay-3">
+          <div class="card-label">Étape 3</div>
+          <div class="card-title">Ajouter les mouvements (clavier + chute)</div>
+          <div class="badge-time">
+            <span>⏱</span> ~25 min
+          </div>
+          <p class="card-desc">
+            Le joueur se déplace avec les flèches gauche/droite, et des objets apparaissent
+            en haut de l’écran puis tombent. On utilise le clavier et <code>random</code>.
+          </p>
+
+          <div class="code-wrapper">
+            <div class="code-label">
+              Code à trous <span>main.py</span>
+            </div>
+            <button class="copy-btn" data-target="code3">
+              <span>⧉</span> Copier
+            </button>
+            <textarea id="code3" class="code-block" readonly>
+import pygame
+import random
+
+pygame.init()
+
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Attrape les objets - Étape 3")
+clock = pygame.time.Clock()
+
+BACKGROUND = (20, 20, 30)
+PLAYER_COLOR = (0, 180, 255)
+OBJECT_COLOR = (255, 120, 120)
+
+player = pygame.Rect(WIDTH // 2 - 40, HEIGHT - 40, 80, 20)
+objects = []
+
+running = True
+while running:
+    # 1) Gestion des événements (fermeture)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # 2) Récupérer l'état du clavier
+    keys = pygame.key.get_pressed()
+
+    # 3) Déplacer le joueur
+    if keys[pygame.K_LEFT]:
+        player.x -= ____  # TODO : vitesse vers la gauche (ex : 7)
+    if keys[pygame.K_RIGHT]:
+        player.x += ____  # TODO : vitesse vers la droite
+
+    # 4) Empêcher le joueur de sortir de l'écran
+    if player.left < 0:
+        player.left = 0
+    if player.right > WIDTH:
+        player.right = WIDTH
+
+    # 5) Créer des objets aléatoirement
+    if random.random() < 0.03:  # probabilité de spawn à chaque frame
+        size = random.randint(15, 30)
+        x = random.randint(0, WIDTH - size)
+        rect = pygame.Rect(x, -size, size, size)
+        speed = random.randint(2, 6)
+        # On stocke chaque objet comme un dictionnaire (rect + vitesse)
+        objects.append({"rect": rect, "speed": speed})
+
+    # 6) Mettre à jour la position de chaque objet (les faire tomber)
+    for obj in objects:
+        obj["rect"].y += obj["speed"]
+
+    # 7) Effacer l'écran et redessiner
+    screen.fill(BACKGROUND)
+    pygame.draw.rect(screen, PLAYER_COLOR, player)
+
+    for obj in objects:
+        pygame.draw.rect(screen, OBJECT_COLOR, obj["rect"])
+
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
+            </textarea>
+          </div>
+          <p class="note">
+            <strong>Question possible :</strong> “Que se passe-t-il si on supprime la partie qui
+            empêche de sortir de l’écran ?”
+          </p>
+        </article>
+
+        <!-- ÉTAPE 4 -->
+        <article class="card fade-in delay-4">
+          <div class="card-label">Étape 4</div>
+          <div class="card-title">Collisions & score</div>
+          <div class="badge-time">
+            <span>⏱</span> ~25 min
+          </div>
+          <p class="card-desc">
+            On détecte les collisions entre le joueur et les objets qui tombent. En cas de collision,
+            l’objet disparaît et le score augmente. On affiche le score à l’écran.
+          </p>
+
+          <div class="code-wrapper">
+            <div class="code-label">
+              Code à trous <span>main.py</span>
+            </div>
+            <button class="copy-btn" data-target="code4">
+              <span>⧉</span> Copier
+            </button>
+            <textarea id="code4" class="code-block" readonly>
+import pygame
+import random
+
+pygame.init()
+
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Attrape les objets - Étape 4")
+clock = pygame.time.Clock()
+
+BACKGROUND = (20, 20, 30)
+PLAYER_COLOR = (0, 180, 255)
+OBJECT_COLOR = (255, 120, 120)
+TEXT_COLOR = (255, 255, 255)
+
+player = pygame.Rect(WIDTH // 2 - 40, HEIGHT - 40, 80, 20)
+objects = []
+score = 0
+
+# Police pour le texte
+font = pygame.font.SysFont(None, 36)
+
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]:
+        player.x -= 7
+    if keys[pygame.K_RIGHT]:
+        player.x += 7
+
+    if player.left < 0:
+        player.left = 0
+    if player.right > WIDTH:
+        player.right = WIDTH
+
+    if random.random() < 0.03:
+        size = random.randint(15, 30)
+        x = random.randint(0, WIDTH - size)
+        rect = pygame.Rect(x, -size, size, size)
+        speed = random.randint(2, 6)
+        objects.append({"rect": rect, "speed": speed})
+
+    # 1) Mettre à jour la position et gérer les collisions / disparitions
+    for obj in objects[:]:  # on parcourt une copie pour pouvoir supprimer
+        obj["rect"].y += obj["speed"]
+
+        # a) Collision avec le joueur ?
+        if obj["rect"].colliderect(player):
+            objects.remove(obj)
+            score += ____  # TODO : combien de points par objet attrapé ?
+
+        # b) Sortie de l'écran (en bas) : on le supprime
+        elif obj["rect"].top > HEIGHT:
+            objects.remove(obj)
+
+    # 2) Dessin
+    screen.fill(BACKGROUND)
+    pygame.draw.rect(screen, PLAYER_COLOR, player)
+
+    for obj in objects:
+        pygame.draw.rect(screen, OBJECT_COLOR, obj["rect"])
+
+    # 3) Afficher le score
+    text = font.render(f"Score : {score}", True, TEXT_COLOR)
+    screen.blit(text, (10, 10))
+
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
+            </textarea>
+          </div>
+          <p class="note">
+            <strong>Extension :</strong> proposer une limite de temps (compte à rebours)
+            ou un système de vies quand les objets touchent le sol.
+          </p>
+        </article>
+
+        <!-- ÉTAPE 5 : TIMER + HIGH SCORE -->
+        <article class="card fade-in delay-5">
+          <div class="card-label">Étape 5</div>
+          <div class="card-title">Timer & meilleur score</div>
+          <div class="badge-time">
+            <span>⏱</span> ~25 min
+          </div>
+          <p class="card-desc">
+            On transforme le jeu en véritable challenge : la partie dure un temps limité (par exemple 30&nbsp;secondes),
+            et le programme garde en mémoire le <strong>meilleur score</strong> obtenu tant qu’il reste ouvert.
+            À la fin du temps, un message invite l’élève à <strong>rejouer avec ESPACE</strong>.
+          </p>
+
+          <div class="code-wrapper">
+            <div class="code-label">
+              Code à trous <span>main.py – version “base” avec timer & high score</span>
+            </div>
+            <button class="copy-btn" data-target="code8">
+              <span>⧉</span> Copier
+            </button>
+            <textarea id="code8" class="code-block" style="min-height: 420px;" readonly>
+import pygame
+import random
+
+# --- Paramètres du jeu ---
+WIDTH, HEIGHT = 800, 600
+GAME_DURATION = ____  # TODO : durée d'une partie en secondes (ex : 30)
+
+pygame.init()
+
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Attrape les objets - Timer & High Score")
+clock = pygame.time.Clock()
+
+# Couleurs
+BACKGROUND = (20, 20, 30)
+PLAYER_COLOR = (0, 180, 255)
+OBJECT_COLOR = (255, 120, 120)
+TEXT_COLOR = (255, 255, 255)
+TEXT_DIM = (160, 160, 160)
+
+# Joueur
+player = pygame.Rect(WIDTH // 2 - 40, HEIGHT - 40, 80, 20)
+player_speed = ____  # TODO : vitesse du joueur (ex : 7)
+
+# Objets
+objects = []
+
+# Score
+score = 0
+high_score = 0   # meilleur score obtenu depuis le lancement du jeu
+
+# Police
+font = pygame.font.SysFont(None, 36)
+big_font = pygame.font.SysFont(None, 64)
+
+# Timer
+start_time = pygame.time.get_ticks()  # en millisecondes
+playing = True  # True = partie en cours, False = fin (on attend un restart)
+
+
+def reset_game():
+    """Réinitialise une partie (sauf le high_score)."""
+    global score, objects, player, start_time, playing
+
+    score = 0
+    objects.clear()
+    # Replacer le joueur au centre
+    player.x = WIDTH // 2 - player.width // 2
+    player.y = HEIGHT - 40
+
+    # Redémarrer le timer
+    start_time = pygame.time.get_ticks()
+
+    # Remettre le jeu à l'état "en cours"
+    playing = True
+
+
+running = True
+while running:
+    # --- Gestion des événements généraux (fermeture) ---
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    keys = pygame.key.get_pressed()
+
+    # --- LOGIQUE DU JEU SELON L'ÉTAT (en cours / fini) ---
+    if playing:
+        # 1) Déplacement du joueur
+        if keys[pygame.K_LEFT]:
+            player.x -= player_speed
+        if keys[pygame.K_RIGHT]:
+            player.x += player_speed
+
+        # Empêcher le joueur de sortir de l'écran
+        if player.left < 0:
+            player.left = 0
+        if player.right > WIDTH:
+            player.right = WIDTH
+
+        # 2) Création d'objets aléatoires
+        if random.random() < 0.03:
+            size = random.randint(15, 30)
+            x = random.randint(0, WIDTH - size)
+            rect = pygame.Rect(x, -size, size, size)
+            speed = random.randint(2, 6)
+            objects.append({"rect": rect, "speed": speed})
+
+        # 3) Mise à jour des objets (chute + collisions)
+        for obj in objects[:]:
+            obj["rect"].y += obj["speed"]
+
+            if obj["rect"].colliderect(player):
+                objects.remove(obj)
+                score += ____  # TODO : nombre de points par objet (ex : 1)
+            elif obj["rect"].top > HEIGHT:
+                objects.remove(obj)
+
+        # 4) Calcul du temps restant
+        current_time_ms = pygame.time.get_ticks()
+        elapsed_ms = current_time_ms - start_time
+        elapsed_sec = elapsed_ms // 1000
+        remaining_time = max(0, GAME_DURATION - elapsed_sec)
+
+        # Si le temps est écoulé : fin de partie
+        if remaining_time <= 0:
+            playing = False
+
+            # Mettre à jour le meilleur score
+            if score > high_score:
+                high_score = score
+    else:
+        # Partie terminée : on attend que le joueur appuie sur ESPACE pour rejouer
+        if keys[pygame.K_SPACE]:
+            reset_game()
+
+        # Quand la partie est finie, on force le temps restant à 0 pour l'affichage
+        remaining_time = 0
+
+    # Si on est en train de jouer, s'assurer que remaining_time est à jour
+    if playing:
+        current_time_ms = pygame.time.get_ticks()
+        elapsed_ms = current_time_ms - start_time
+        elapsed_sec = elapsed_ms // 1000
+        remaining_time = max(0, GAME_DURATION - elapsed_sec)
+
+    # --- DESSIN ---
+    screen.fill(BACKGROUND)
+
+    # Joueur
+    pygame.draw.rect(screen, PLAYER_COLOR, player)
+
+    # Objets
+    for obj in objects:
+        pygame.draw.rect(screen, OBJECT_COLOR, obj["rect"])
+
+    # Texte : score, meilleur score, timer
+    score_text = font.render(f"Score : {score}", True, TEXT_COLOR)
+    high_score_text = font.render(f"Meilleur : {high_score}", True, TEXT_COLOR)
+
+    # Timer en rouge si proche de la fin
+    timer_color = TEXT_COLOR if remaining_time > 5 else (255, 80, 80)
+    timer_text = font.render(f"Temps : {remaining_time:2d}s", True, timer_color)
+
+    screen.blit(score_text, (10, 10))
+    screen.blit(high_score_text, (10, 50))
+    screen.blit(timer_text, (WIDTH - timer_text.get_width() - 10, 10))
+
+    # Message de fin de partie
+    if not playing:
+        msg = "Temps écoulé !"
+        msg2 = "Appuie sur ESPACE pour rejouer"
+
+        msg_surf = big_font.render(msg, True, TEXT_COLOR)
+        msg2_surf = font.render(msg2, True, TEXT_DIM)
+
+        screen.blit(
+            msg_surf,
+            (WIDTH // 2 - msg_surf.get_width() // 2, HEIGHT // 2 - 60)
+        )
+        screen.blit(
+            msg2_surf,
+            (WIDTH // 2 - msg2_surf.get_width() // 2, HEIGHT // 2 + 10)
+        )
+
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
+            </textarea>
+          </div>
+          <p class="note">
+            <strong>Pédago :</strong> cette étape est parfaite pour travailler la gestion du temps,
+            l’état du jeu (en cours / terminé) et la notion de “meilleur score” sur plusieurs parties.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <!-- APPROFONDIR -->
+    <section id="approfondir">
+      <h2 class="section-title">
+        <span class="icon">2</span> Aller plus loin : musique, nouvelles formes & background
+      </h2>
+      <p class="section-subtitle">
+        Une fois le jeu fonctionnel, on enrichit l’expérience : ajouter une musique de fond,
+        un son lorsqu’un objet est attrapé, d’autres formes (cercles, tailles différentes),
+        et une image d’arrière-plan.
+      </p>
+
+      <div class="advanced-grid">
+        <!-- MUSIQUE -->
+        <article class="card fade-in delay-1">
+          <div class="advanced-tag">
+            🎵 Ajouter de la musique & des sons
+          </div>
+          <p class="card-desc">
+            On utilise <code>pygame.mixer</code> pour charger une musique de fond et un son
+            à jouer lors de chaque objet attrapé.
+          </p>
+
+          <div class="code-wrapper">
+            <div class="code-label">
+              Ajout dans <span>main.py</span>
+            </div>
+            <button class="copy-btn" data-target="code5">
+              <span>⧉</span> Copier
+            </button>
+            <textarea id="code5" class="code-block" readonly>
+import pygame
+import random
+
+pygame.init()
+
+# --- NOUVEAU : initialisation du mixer pour le son ---
+pygame.mixer.init()
+
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Attrape les objets - Musique")
+clock = pygame.time.Clock()
+
+# ...
+
+# --- NOUVEAU : charger la musique de fond ---
+# Placer un fichier "music.ogg" ou "music.mp3" dans le même dossier que main.py
+pygame.mixer.music.load("____")  # TODO : nom du fichier musique
+pygame.mixer.music.play(-1)      # -1 = boucle infinie
+
+# --- NOUVEAU : charger un son court pour les collisions ---
+catch_sound = pygame.mixer.Sound("____")  # TODO : fichier .wav court (ex : "catch.wav")
+
+# ...
+
+while running:
+    # (le reste du code ne change pas beaucoup)
+
+    for obj in objects[:]:
+        obj["rect"].y += obj["speed"]
+
+        if obj["rect"].colliderect(player):
+            objects.remove(obj)
+            score += 1
+            # --- NOUVEAU : jouer le son ---
+            catch_sound.play()
+        elif obj["rect"].top > HEIGHT:
+            objects.remove(obj)
+
+    # ...
+            </textarea>
+          </div>
+          <p class="note">
+            <strong>À savoir :</strong> les fichiers son (.wav, .ogg) doivent être dans le même dossier
+            que le script ou on indique le chemin complet.
+          </p>
+        </article>
+
+        <!-- AUTRES FORMES -->
+        <article class="card fade-in delay-2">
+          <div class="advanced-tag">
+            🔷 D’autres formes & vitesses
+          </div>
+          <p class="card-desc">
+            On enrichit la variété des objets : certains sont des rectangles, d’autres des cercles,
+            avec tailles et vitesses aléatoires.
+          </p>
+
+          <div class="code-wrapper">
+            <div class="code-label">
+              Modification de la création & du dessin des objets
+            </div>
+            <button class="copy-btn" data-target="code6">
+              <span>⧉</span> Copier
+            </button>
+            <textarea id="code6" class="code-block" readonly>
+import pygame
+import random
+
+# ... (initialisation identique)
+
+objects = []
+
+# ...
+
+    # Création d'un objet avec différentes formes possibles
+    if random.random() < 0.03:
+        size = random.randint(15, 35)
+        x = random.randint(0, WIDTH - size)
+        rect = pygame.Rect(x, -size, size, size)
+        speed = random.randint(2, 6)
+
+        # --- NOUVEAU : type de forme aléatoire ---
+        shape_type = random.choice(["rect", "circle"])
+
+        # On stocke la forme dans le dictionnaire
+        objects.append({
+            "rect": rect,
+            "speed": speed,
+            "shape": shape_type
+        })
+
+    # ...
+
+    # Dessin des objets
+    for obj in objects:
+        r = obj["rect"]
+        if obj["shape"] == "rect":
+            pygame.draw.rect(screen, OBJECT_COLOR, r)
+        else:
+            # Dessiner un cercle à partir du rect
+            center = r.center
+            radius = r.width // 2
+            pygame.draw.circle(screen, OBJECT_COLOR, center, radius)
+            </textarea>
+          </div>
+          <p class="note">
+            <strong>Idée :</strong> donner un score différent selon le type de forme (ex : cercle = 2 points).
+          </p>
+        </article>
+
+        <!-- BACKGROUND IMAGE -->
+        <article class="card fade-in delay-3">
+          <div class="advanced-tag">
+            🖼 Image de fond (background)
+          </div>
+          <p class="card-desc">
+            Au lieu d’un fond uni, on affiche une image. Les élèves peuvent créer leur propre fond
+            (par exemple avec un logiciel de dessin).
+          </p>
+
+          <div class="code-wrapper">
+            <div class="code-label">
+              Ajout dans <span>main.py</span>
+            </div>
+            <button class="copy-btn" data-target="code7">
+              <span>⧉</span> Copier
+            </button>
+            <textarea id="code7" class="code-block" readonly>
+import pygame
+import random
+
+pygame.init()
+
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Attrape les objets - Background image")
+clock = pygame.time.Clock()
+
+# --- NOUVEAU : charger une image de fond ---
+# Placer "background.png" dans le même dossier que main.py
+background_img = pygame.image.load("____")  # TODO : nom du fichier (ex : "background.png")
+# Adapter l'image à la taille de la fenêtre
+background_img = pygame.transform.scale(background_img, (WIDTH, HEIGHT))
+
+# ...
+
+while running:
+    # ...
+
+    # Au lieu de screen.fill(BACKGROUND) :
+    screen.blit(background_img, (0, 0))
+
+    # Puis on dessine le reste par-dessus (joueur, objets, score)
+    pygame.draw.rect(screen, PLAYER_COLOR, player)
+    for obj in objects:
+        # ...
+        pygame.draw.rect(screen, OBJECT_COLOR, obj["rect"])
+
+    text = font.render(f"Score : {score}", True, TEXT_COLOR)
+    screen.blit(text, (10, 10))
+
+    pygame.display.flip()
+    clock.tick(60)
+            </textarea>
+          </div>
+          <p class="note">
+            <strong>Suggestion :</strong> proposer aux élèves de créer un thème (espace, océan, ville…)
+            avec un fond et des couleurs cohérents.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <!-- CODE COMPLET -->
+    <section id="code-complet">
+      <h2 class="section-title">
+        <span class="icon">3</span> Code complet final
+      </h2>
+      <p class="section-subtitle">
+        Voici une version complète du jeu, incluant : formes variées, musique de fond, son à la collision,
+        et image de background. Tu peux la donner en correction ou comme point de comparaison.
+      </p>
+
+      <article class="card fade-in delay-2">
+        <div class="card-label">Version complète</div>
+        <div class="card-title">main.py</div>
+        <p class="card-desc">
+          Attention : ce code suppose que tu as des fichiers <code>music.ogg</code>,
+          <code>catch.wav</code> et <code>background.png</code> dans le même dossier que
+          <code>main.py</code>. Tu peux changer les noms des fichiers à ta convenance.
+        </p>
+
+        <div class="code-wrapper">
+          <div class="code-label">
+            Code complet <span>main.py</span>
+          </div>
+          <button class="copy-btn" data-target="code-full">
+            <span>⧉</span> Copier
+          </button>
+          <textarea id="code-full" class="code-block" style="min-height: 420px;" readonly>
+import pygame
+import random
+
+# --- Initialisation ---
+pygame.init()
+pygame.mixer.init()
+
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Attrape les objets - Version complète")
+clock = pygame.time.Clock()
+
+# --- Couleurs ---
+BACKGROUND_COLOR = (20, 20, 30)
+PLAYER_COLOR = (0, 180, 255)
+OBJECT_COLOR = (255, 120, 120)
+TEXT_COLOR = (255, 255, 255)
+
+# --- Joueur ---
+player = pygame.Rect(WIDTH // 2 - 40, HEIGHT - 40, 80, 20)
+player_speed = 7
+
+# --- Objets ---
+objects = []
+
+# --- Score & police ---
+score = 0
+font = pygame.font.SysFont(None, 36)
+
+# --- Musique & sons (adapter les noms de fichiers) ---
+try:
+    pygame.mixer.music.load("music.ogg")
+    pygame.mixer.music.play(-1)
+except pygame.error:
+    print("Impossible de charger music.ogg (musique ignorée).")
+
+try:
+    catch_sound = pygame.mixer.Sound("catch.wav")
+except pygame.error:
+    catch_sound = None
+    print("Impossible de charger catch.wav (son ignoré).")
+
+# --- Image de fond (adapter le nom de fichier) ---
+try:
+    background_img = pygame.image.load("background.png")
+    background_img = pygame.transform.scale(background_img, (WIDTH, HEIGHT))
+    use_background_image = True
+except pygame.error:
+    background_img = None
+    use_background_image = False
+    print("Impossible de charger background.png (fond uni utilisé).")
+
+running = True
+while running:
+    # 1) Gestion des événements
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # 2) Entrées clavier
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]:
+        player.x -= player_speed
+    if keys[pygame.K_RIGHT]:
+        player.x += player_speed
+
+    # Empêcher de sortir de l'écran
+    if player.left < 0:
+        player.left = 0
+    if player.right > WIDTH:
+        player.right = WIDTH
+
+    # 3) Création d'objets aléatoires
+    if random.random() < 0.03:
+        size = random.randint(15, 35)
+        x = random.randint(0, WIDTH - size)
+        rect = pygame.Rect(x, -size, size, size)
+        speed = random.randint(2, 6)
+        shape_type = random.choice(["rect", "circle"])
+        objects.append({
+            "rect": rect,
+            "speed": speed,
+            "shape": shape_type,
+        })
+
+    # 4) Mise à jour des objets (chute + collisions)
+    for obj in objects[:]:
+        obj["rect"].y += obj["speed"]
+
+        if obj["rect"].colliderect(player):
+            objects.remove(obj)
+            score += 1
+            if catch_sound is not None:
+                catch_sound.play()
+        elif obj["rect"].top > HEIGHT:
+            objects.remove(obj)
+
+    # 5) Dessin
+    if use_background_image and background_img is not None:
+        screen.blit(background_img, (0, 0))
+    else:
+        screen.fill(BACKGROUND_COLOR)
+
+    # Dessiner les objets
+    for obj in objects:
+        r = obj["rect"]
+        if obj["shape"] == "rect":
+            pygame.draw.rect(screen, OBJECT_COLOR, r)
+        else:
+            center = r.center
+            radius = r.width // 2
+            pygame.draw.circle(screen, OBJECT_COLOR, center, radius)
+
+    # Dessiner le joueur
+    pygame.draw.rect(screen, PLAYER_COLOR, player, border_radius=10)
+
+    # Afficher le score
+    text = font.render(f"Score : {score}", True, TEXT_COLOR)
+    screen.blit(text, (10, 10))
+
+    # 6) Mise à jour de l'écran
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
+          </textarea>
+        </div>
+      </article>
+
+      
+    </section>
+
+    <footer>
+      Atelier Pygame – “Attrape les objets” · par Jean Philippe Z. (c) 2025
+    </footer>
+  </main>
+
+  <script>
+    // Boutons "Copier" pour les blocs de code
+    document.querySelectorAll(".copy-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const targetId = btn.getAttribute("data-target");
+        const textarea = document.getElementById(targetId);
+        if (!textarea) return;
+        textarea.select();
+        textarea.setSelectionRange(0, 99999);
+        try {
+          document.execCommand("copy");
+          const oldText = btn.innerHTML;
+          btn.innerHTML = "<span>✔</span> Copié !";
+          setTimeout(() => {
+            btn.innerHTML = oldText;
+          }, 1400);
+        } catch (err) {
+          console.error("Impossible de copier :", err);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+
